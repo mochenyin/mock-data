@@ -1,0 +1,58 @@
+{
+  "name": "mock-data-mcy",
+  "displayName": "mock-data-mcy",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+  ],
+  "publisher": "mochenyin",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/mochenyin/mock-data.git"
+	},
+  "main": "./src/index.js",
+  "contributes": {
+    "commands": [
+      {
+				"command": "mock-data.start",
+				"title": "mock-data: mock data start"
+			},
+      {
+				"command": "mock-data.mockClipboardData",
+				"title": "mock-data: mock Clipboard Data"
+			}
+    ],
+    "menus": {
+			"editor/context": [
+				{
+					"when": "editorTextFocus",
+					"command": "mock-data.mockClipboardData",
+					"group": "navigation"
+				}
+			]
+		}
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "yarn run lint",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.80.0",
+    "@vscode/test-electron": "^2.2.3",
+    "eslint": "^8.34.0",
+    "glob": "^8.1.0",
+    "json-schema-faker": "^0.5.3",
+    "mocha": "^10.2.0",
+    "typescript": "^4.9.5"
+  }
+}
