@@ -1,5 +1,3 @@
-const jsf = require("json-schema-faker");
-
 let subRequest = [];
 let subResponse = [];
 let jsonCode;
@@ -7,12 +5,32 @@ let path;
 let indent;
 const semicolonEnd = true;
 
-const createMockData = (type) => (
-  {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": type,
+const getRandomNumber = (start, end) =>
+  end - Math.ceil((end - start) * Math.random());
+const booleanArray = [true, false];
+
+const strArray = ["Overhead","the","albatross","Hangs","motionless","upon","the","air","And","deep","beneath","the","rolling","waves","In","labyrinths","of","coral","caves","The","echo","of","a","distant","time","Comes","willowing","across","the","sand","And","everything","is","green","and","submarine","And","no","one","showed","us","to","the","land","And","no","one","knows","the","where's","or","why's","Something","stirs","and","something","tries","And","starts","to","climb","toward","the","light","Strangers","passing","in","the","street","By","chance","two","separate","glances","meet","And","I","am","you","and","what","I","see","is","me","And","do","I","take","you","by","the","hand","And","lead","you","through","the","land","And","help","me","understand","the","best","I","can","And","no","one","calls","us","to","move","on","And","no","one","forces","down","our","eyes","No","one","speaks","and","no","one","tries","No","one","flies","around","the","sun","Cloudless","everyday","you","fall","Upon","my","waking","eyes","Inviting","and","inciting","me","To","rise","And","through","the","window","in","the","wall","Come","streaming","in","on","sunlight","wings","A","million","bright","ambassadors","of","morning","And","no","one","sings","me","lullabies","And","no","one","makes","me","close","my","eyes","So","I","throw","the","windows","wide","And","call","to","you","across","the","sky"]
+const length = 195;
+const createMockData = (type) => {
+  switch (type) {
+    case "boolean":
+      return booleanArray[getRandomNumber(0, 1)];
+    case "integer":
+      return getRandomNumber(0, 100);
+    case "number":
+      return parseFloat(getRandomNumber(0, 10000)/getRandomNumber(1, 10000)).toFixed(6);
+    case "string":
+      {
+        let str = "";
+        new Array(getRandomNumber(0, 30)).fill(0).forEach(() => {
+          str += strArray[getRandomNumber(0, 194)] + " ";
+        })
+        return str;
+      }
+    default:
+      return null;
   }
-);
+};
 
 // 添加缩进
 const addIndent = (identNum) => {
@@ -34,7 +52,13 @@ const firstCharUpperCase = (v) => v.charAt(0).toLocaleUpperCase() + v.slice(1);
 const createInterfaceName = (name) => {
   let interfaceName = "";
   const nameList = name.split("-");
-  nameList.forEach((v) => (interfaceName += firstCharUpperCase(v)));
+  nameList.forEach((v, index) => {
+    if (index === 0) {
+      interfaceName += v;
+      return;
+    }
+    interfaceName += firstCharUpperCase(v);
+  });
   return interfaceName;
 };
 
@@ -79,7 +103,7 @@ const singleItem = async (item, interfaceType) => {
     mockValue = interfaceName;
   } else {
     // @ts-ignore
-    mockValue = await jsf.resolve(createMockData(type));
+    mockValue = createMockData(type);
   }
   return `${addIndent(indent)}${item.name}: ${
     item.type === "string" ? `"${mockValue}"` : mockValue
@@ -92,7 +116,10 @@ const getCodeFromDefinitions = async (
   interfaceType,
   interfaceName
 ) => {
-  const responsesThirdOriginalRef = jsonCode.definitions[keyName] === undefined ? {} : jsonCode.definitions[keyName];
+  const responsesThirdOriginalRef =
+    jsonCode.definitions[keyName] === undefined
+      ? {}
+      : jsonCode.definitions[keyName];
   const target = responsesThirdOriginalRef.properties;
   const responsesArray = Object.keys(target || {});
   if (responsesArray.length) {
@@ -110,7 +137,12 @@ const getCodeFromDefinitions = async (
 
 const createSubInterface = async (type, interfaceType, interfaceName) => {
   let result = "";
-  result = await getCodeFromDefinitions(result, type, interfaceType, interfaceName);
+  result = await getCodeFromDefinitions(
+    result,
+    type,
+    interfaceType,
+    interfaceName
+  );
   return result;
 };
 
@@ -125,7 +157,7 @@ const interfaceCreater = async (code, config) => {
       return { interfaceCode: resultCode, isError: false };
     }
     indent = config.indent;
-  
+
     // 转换请求interface
     const target = jsonCode.paths[path].get || jsonCode.paths[path].post;
     const parameters = target.parameters;
@@ -135,17 +167,18 @@ const interfaceCreater = async (code, config) => {
         if (item.schema !== undefined) {
           const keyName = item.schema.originalRef;
           if (keyName) {
-            resultCode = await getCodeFromDefinitions(resultCode, keyName, "request");
+            resultCode = await getCodeFromDefinitions(
+              resultCode,
+              keyName,
+              "request"
+            );
           }
         } else {
           rArray.push(await singleItem(item, "request"));
         }
       }
       if (rArray.length) {
-        resultCode += `const ${getName(
-          path,
-          "request"
-        )}${addLeftBracket}`;
+        resultCode += `const ${getName(path, "request")}${addLeftBracket}`;
         rArray.forEach((item) => (resultCode += item));
         resultCode += addRightBracket;
       }

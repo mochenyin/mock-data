@@ -21,10 +21,6 @@ module.exports = vscode.commands.registerCommand('mock-data.mockClipboardData', 
             return;
         }
     
-        if (interfaceCode === "") {
-            return;
-        }
-    
         // 插入转换后的 mock data
         currentEditor.edit((editBuilder) => {
             const position = new vscode.Position(currentEditor.selection.active.line, currentEditor.selection.active.character)
