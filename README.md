@@ -9,8 +9,8 @@ your extension
 根据Swagger接口文档中的JSON Schema，生成对应数据类型的mock数据
 
 ### 使用步骤
-1.复制Swagger文档中接口的JSON Schema
-2.右键选择mock-data: mock Clipboard Data，生成剪贴板文本中(文本需符合JSON Schema格式)对应数据格式的mock数据     
+1.复制Swagger文档中接口的JSON Schema    
+2.右键选择mock-data: mock Clipboard Data，生成剪贴板文本中(文本需符合JSON Schema格式)对应数据格式的mock数据         
 
 
 ## Extension Settings
